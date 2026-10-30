@@ -12,7 +12,7 @@
     <PackageId>Fomoxa.Net.WebSockets</PackageId>
     <Description>WebSocket transport and listener for Fomoxa.Net: RFC 6455 on a non-blocking byte stream.</Description>
     <Authors>Fomoxa Protocol</Authors>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <PackageTags>fomoxa;protocol;networking;websocket</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>

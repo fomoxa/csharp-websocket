@@ -31,7 +31,7 @@ if (accepted.Status == AcceptStatus.Accepted)
 }
 ```
 
-`Accept` never blocks. A loop that has nothing else to do can sleep in `listener.WaitReady(timeout)`, which returns when a connection arrives, a pending handshake can move, or one runs out of time.
+`Accept` never blocks. A loop that has nothing else to do can sleep in `listener.WaitReady(timeout)`, which returns when a connection arrives, a pending handshake can move, or one runs out of time. `WaitReady(timeout, interrupt)` also returns when the `interrupt` socket becomes readable, so another thread can wake the loop.
 
 Client side, non-blocking:
 

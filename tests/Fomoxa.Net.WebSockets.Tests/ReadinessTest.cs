@@ -111,6 +111,21 @@ namespace Fomoxa.Net.WebSockets.Tests
         }
 
         [Test]
+        public void AnInterruptSocketEndsTheListenerWait()
+        {
+            using var listener = WebSocketTransportTest.Listen(new WebSocketSettings(), out _);
+            using var interrupt = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            interrupt.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            interrupt.Connect(interrupt.LocalEndPoint);
+            Assert.IsFalse(listener.WaitReady(TimeSpan.FromMilliseconds(20), interrupt));
+
+            interrupt.Send(new byte[] { 1 });
+            var clock = Stopwatch.StartNew();
+            Assert.IsTrue(listener.WaitReady(TimeSpan.FromSeconds(10), interrupt));
+            Assert.Less(clock.Elapsed, TimeSpan.FromSeconds(5));
+        }
+
+        [Test]
         public void TheListenerWaitEndsWhenAPendingHandshakeExpires()
         {
             var now = TimeSpan.Zero;

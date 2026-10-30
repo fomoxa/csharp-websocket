@@ -60,14 +60,18 @@ namespace Fomoxa.Net.WebSockets
             return progressed ? AcceptOutcome.Progress : AcceptOutcome.Pending;
         }
 
-        public bool WaitReady(TimeSpan timeout)
+        public bool WaitReady(TimeSpan timeout, Socket? interrupt = null)
         {
             if (released)
             {
                 return true;
             }
 
-            var readers = new List<Socket>(pending.Count + 1) { socket };
+            var readers = new List<Socket>(pending.Count + 2) { socket };
+            if (interrupt != null)
+            {
+                readers.Add(interrupt);
+            }
             var writers = new List<Socket>();
             foreach (PendingHandshake handshake in pending)
             {
