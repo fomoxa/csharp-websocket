@@ -17,7 +17,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/fomoxa/csharp_websocket</RepositoryUrl>
+    <RepositoryUrl>https://github.com/fomoxa/csharp-websocket</RepositoryUrl>
     <PackageProjectUrl>https://fomoxa.github.io</PackageProjectUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
