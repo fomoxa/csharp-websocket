@@ -1,0 +1,61 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write # required for NuGet Trusted Publishing (OIDC)
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Warn about a version already on NuGet
+        run: |
+          set -euo pipefail
+          csproj=src/Fomoxa.Net.WebSockets/Fomoxa.Net.WebSockets.csproj
+          id=$(grep -oPm1 '(?<=<PackageId>)[^<]+' "$csproj")
+          version=$(grep -oPm1 '(?<=<Version>)[^<]+' "$csproj")
+          lower_id=$(echo "$id" | tr '[:upper:]' '[:lower:]')
+          url="https://api.nuget.org/v3-flatcontainer/${lower_id}/${version}/${lower_id}.nuspec"
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          if [ "$status" = "200" ]; then
+            echo "::warning file=$csproj::$id $version is already published on NuGet - the publish step will be a no-op. Bump <Version> in $csproj first."
+          else
+            echo "$id $version is not yet published - this release will publish it."
+          fi
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build
+        run: dotnet build Fomoxa.Net.WebSockets.sln -c Release
+
+      - name: Test
+        run: dotnet test Fomoxa.Net.WebSockets.sln -c Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/Fomoxa.Net.WebSockets/Fomoxa.Net.WebSockets.csproj -c Release -o artifacts
+
+      # Exchanges a short-lived GitHub OIDC token for a temporary nuget.org
+      # API key (valid 1 hour). No long-lived secret is stored anywhere.
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: NuGet push
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" \
+            --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
